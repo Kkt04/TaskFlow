@@ -1,0 +1,11 @@
+# environment variables
+.env
+
+# node dependencies
+node_modules/
+
+# optional (recommended)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
