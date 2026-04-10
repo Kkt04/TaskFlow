@@ -386,9 +386,9 @@ function renderTasks(tasks) {
         const due    = task.dueDate ? formatDate(task.dueDate) : null;
         const tagCls = `tag-${task.tag || 'personal'}`;
         return `
-        <div class="task-card ${task.done ? 'done' : ''}" style="animation-delay:${i * 0.05}s" id="card-${task.id}">
+        <div class="task-card ${task.done ? 'done' : ''}" style="animation-delay:${i * 0.05}s" id="card-${task._id}">
           <div class="task-card-header">
-            <div class="task-check ${task.done ? 'checked' : ''}" data-id="${task.id}" data-done="${task.done}"></div>
+            <div class="task-check ${task.done ? 'checked' : ''}" data-id="${task._id}" data-done="${task.done}"></div>
             <div class="task-title">${escHtml(task.title)}</div>
           </div>
           ${task.description ? `<div class="task-desc">${escHtml(task.description)}</div>` : ''}
@@ -397,7 +397,7 @@ function renderTasks(tasks) {
             ${due ? `<span class="due-badge ${due.cls}">📅 ${due.label}</span>` : ''}
           </div>
           <div class="task-actions">
-            <button class="btn btn-danger btn-sm" data-delete="${task.id}">🗑 Delete</button>
+            <button class="btn btn-danger btn-sm" data-delete="${task._id}">🗑 Delete</button>
           </div>
         </div>`;
     }).join('');
@@ -408,7 +408,7 @@ function renderTasks(tasks) {
             const id   = el.dataset.id;
             const done = el.dataset.done === 'true';
             const updated = await updateTask(id, { done: !done });
-            const idx = tasks.findIndex(t => t.id === id);
+            const idx = tasks.findIndex(t => t._id === id);
             if (idx !== -1) tasks[idx] = updated;
             renderTasks(tasks);
             toast(done ? 'Marked as to-do.' : 'Task completed! ✅');
@@ -422,7 +422,7 @@ function renderTasks(tasks) {
             el.innerHTML = '<span class="spinner"></span>';
             el.disabled = true;
             await deleteTask(id);
-            const idx = tasks.findIndex(t => t.id === id);
+            const idx = tasks.findIndex(t => t._id === id);
             if (idx !== -1) tasks.splice(idx, 1);
             renderTasks(tasks);
             toast('Task deleted.');
