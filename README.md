@@ -4,15 +4,40 @@
 
 **A modern, full-stack task management web application engineered for speed, simplicity, and focus.**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-TaskFlow%20on%20Vercel-success?style=for-the-badge&logo=vercel)](https://taskflow-seven-flame.vercel.app)
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FKkt04%2FTaskFlow&env=MONGO_URI,JWT_SECRET&envDescription=MongoDB%20Atlas%20connection%20string%20and%20JWT%20secret%20key)
 [![Node.js Version](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-4.18-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%2F%20Mongoose-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[Live Demo](#-deploying-to-vercel) • [Features](#-features) • [Getting Started](#-getting-started) • [Deployment](#-deploying-to-vercel) • [API Reference](#-api-reference)
+[🌐 Live Demo](#-live-demo--instant-testing) • [Features](#-features) • [Getting Started](#-getting-started) • [Deployment](#-deploying-to-vercel) • [API Reference](#-api-reference)
 
 </div>
+
+---
+
+## 🌐 Live Demo & Instant Testing
+
+TaskFlow is deployed and accessible right now:
+
+👉 **[https://taskflow-seven-flame.vercel.app](https://taskflow-seven-flame.vercel.app)**
+
+> ### 🟡 Option 2: Live In-Memory / Demo Mode (Abhi ke abhi chalaana ho toh)
+> To allow instant evaluation on Vercel without forcing visitors or evaluators to provision a MongoDB Atlas cluster first, TaskFlow includes an **automatic in-memory fallback store**:
+>
+> - **⚡ Try Instant Demo Login:**
+>   - **Username:** `demo`
+>   - **Password:** `demo123`
+>   *(Comes pre-seeded with sample tasks, tags, due dates, and overdue status).*
+>
+> - **✨ Or Register a New User:**
+>   - You can also register your own account on the live site — full task creation, editing, category filtering, and deletions work out of the box!
+>
+> - **🔄 Smart Hybrid Switching:**
+>   - When no external cloud database is detected, TaskFlow runs in **Demo In-Memory Mode**.
+>   - Whenever a `MONGO_URI` (MongoDB Atlas) is provided in Vercel environment variables, it automatically promotes to full MongoDB persistence with **zero code changes**.
 
 ---
 
@@ -20,7 +45,7 @@
 
 **TaskFlow** is an intuitive, full-stack productivity tool designed to help individuals and teams organize their day with zero friction. Built with a responsive dark-mode UI and a lightweight Node.js/Express backend, TaskFlow delivers real-time task tracking, instant status filtering, dynamic category tags, and automated overdue tracking.
 
-Ready to run locally in seconds or deploy serverlessly to **Vercel** with **MongoDB Atlas**.
+Ready to run locally in seconds with local MongoDB or deploy serverlessly to **Vercel** with **MongoDB Atlas** or instant **Demo Mode**.
 
 ---
 
@@ -28,7 +53,7 @@ Ready to run locally in seconds or deploy serverlessly to **Vercel** with **Mong
 
 - 🔐 **Secure User Authentication**
   - Registration and login powered by JSON Web Tokens (JWT)
-  - Passwords hashed using `bcryptjs` with 12 salt rounds
+  - Passwords hashed using `bcryptjs` with salt rounds
   - User-scoped tasks: strict data isolation per account
 
 - 📋 **Intuitive Task Management**
@@ -52,6 +77,7 @@ Ready to run locally in seconds or deploy serverlessly to **Vercel** with **Mong
 
 - ☁️ **Cloud & Serverless Ready**
   - Pre-configured for seamless deployment to **Vercel**
+  - Built-in **Demo Mode Fallback** for instant zero-config cloud deployments
   - Optimized MongoDB connection caching for serverless environments
 
 ---
@@ -62,7 +88,7 @@ Ready to run locally in seconds or deploy serverlessly to **Vercel** with **Mong
 | :--- | :--- | :--- |
 | **Frontend** | Vanilla HTML5, CSS3, JavaScript (ES6+) | Lightweight SPA, zero build tool overhead |
 | **Backend** | Node.js, Express.js | RESTful API server with modular routing |
-| **Database** | MongoDB, Mongoose 9 | Document database with cached connection pooling |
+| **Database** | MongoDB / Mongoose + In-Memory Fallback | Dual-mode storage (cloud DB or instant demo) |
 | **Security** | JWT (`jsonwebtoken`), `bcryptjs` | Stateless token authentication & password encryption |
 | **Hosting** | Vercel Serverless Functions | Autoscaling global edge deployment |
 
@@ -79,11 +105,12 @@ TaskFlow/
 ├── server/                 # Express backend application
 │   ├── index.js            # Server entry point & Express configuration
 │   ├── db.js               # MongoDB connection helper with connection caching
+│   ├── memoryStore.js      # In-memory storage engine for instant demo mode
 │   ├── middleware/
 │   │   └── auth.js         # JWT bearer token verification middleware
 │   ├── models/
-│   │   ├── User.js         # User Mongoose schema
-│   │   └── Task.js         # Task Mongoose schema
+│   │   ├── User.js         # User model with hybrid Mongoose/Memory support
+│   │   └── Task.js         # Task model with hybrid Mongoose/Memory support
 │   └── routes/
 │       ├── auth.js         # /api/auth routes (register, login)
 │       └── tasks.js        # /api/tasks routes (CRUD operations)
@@ -103,7 +130,7 @@ Follow these steps to set up and run TaskFlow on your local machine.
 
 - [Node.js](https://nodejs.org/) (v18.x or higher)
 - [npm](https://www.npmjs.com/) (installed with Node)
-- [MongoDB](https://www.mongodb.com/try/download/community) running locally on port `27017` (or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
+- [MongoDB](https://www.mongodb.com/try/download/community) running locally on port `27017` (or use demo mode)
 
 ### Installation
 
@@ -145,57 +172,21 @@ Follow these steps to set up and run TaskFlow on your local machine.
 
 ## ☁️ Deploying to Vercel
 
-TaskFlow is optimized to run out-of-the-box on [Vercel](https://vercel.com). Because Vercel functions are serverless, you need a cloud MongoDB database such as **MongoDB Atlas**.
+TaskFlow is optimized to run out-of-the-box on [Vercel](https://vercel.com).
 
-### Step 1: Set Up MongoDB Atlas (Free Tier)
-1. Sign in to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
-2. Create a free **M0 Sandbox** cluster.
-3. In **Database Access**, create a user with read and write permissions. Note the username and password.
-4. In **Network Access**, add IP Address `0.0.0.0/0` (allow access from anywhere) so Vercel serverless functions can connect.
-5. Click **Connect** → **Drivers** (Node.js) and copy your connection string:
-   ```text
-   mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/taskflow?retryWrites=true&w=majority
-   ```
+### Deployment Options:
 
-### Step 2: Deploy to Vercel
+#### 🟡 Mode 1: Live Demo Mode (Zero Setup Required)
+You can deploy to Vercel without configuring MongoDB Atlas immediately. The app detects the environment and uses the built-in in-memory store so anyone can test registration, login, and tasks instantly.
 
-#### Option A: One-Click Deploy (Fastest)
-Click the button below to import the repo and deploy instantly:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FKkt04%2FTaskFlow&env=MONGO_URI,JWT_SECRET&envDescription=MongoDB%20Atlas%20connection%20string%20and%20JWT%20secret%20key)
-
-#### Option B: Deploy via Vercel Dashboard (GitHub Integration)
-1. Push your repository to GitHub:
-   ```bash
-   git add .
-   git commit -m "Configure TaskFlow for Vercel deployment"
-   git push origin main
-   ```
-2. Go to your [Vercel Dashboard](https://vercel.com/dashboard) and click **Add New...** → **Project**.
-3. Import your `TaskFlow` repository.
-4. Under **Environment Variables**, add:
-   - `MONGO_URI`: Your MongoDB Atlas connection URI
-   - `JWT_SECRET`: A secure random secret string (e.g. generate via `openssl rand -hex 32`)
-5. Click **Deploy**. Vercel will build and assign you a live `.vercel.app` URL!
-
-#### Option C: Deploy using Vercel CLI
-```bash
-# Install Vercel CLI globally
-npm install -g vercel
-
-# Log in to your Vercel account
-vercel login
-
-# Link and deploy
-vercel
-
-# Add environment variables
-vercel env add MONGO_URI
-vercel env add JWT_SECRET
-
-# Deploy to production
-vercel --prod
-```
+#### 🟢 Mode 2: Full MongoDB Atlas Cloud Persistence
+To persist data permanently across cloud sessions:
+1. Sign in to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) and create a free **M0 Sandbox** cluster.
+2. In **Database Access**, create a user and password.
+3. In **Network Access**, add IP Address `0.0.0.0/0` (Allow Access from Anywhere).
+4. In **Vercel Project Settings → Environment Variables**, add:
+   - `MONGO_URI`: `mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/taskflow?retryWrites=true&w=majority`
+   - `JWT_SECRET`: Random 32+ character secret string
 
 ---
 
@@ -256,11 +247,11 @@ GET /api/tasks
 ```json
 [
   {
-    "_id": "6730c458e0a4f5b1c8e12345",
+    "_id": "6730c458e0a4f5b1c8e12341",
     "userId": "6730c440e0a4f5b1c8e12340",
-    "title": "Prepare Sprint Demo",
-    "description": "Outline key deliverables and architectural upgrades",
-    "tag": "work",
+    "title": "Welcome to TaskFlow! 🎉",
+    "description": "Explore the dashboard, create tasks, and test filtering.",
+    "tag": "learning",
     "dueDate": "2026-11-15T00:00:00.000Z",
     "done": false,
     "createdAt": "2026-11-10T15:30:00.000Z",
@@ -309,7 +300,7 @@ DELETE /api/tasks/:id
 
 ## 🔒 Security & Best Practices
 
-- **Password Hashing:** Passwords are never stored in plaintext. They are salted and hashed using `bcryptjs` with a cost factor of 12.
+- **Password Hashing:** Passwords are never stored in plaintext. They are salted and hashed using `bcryptjs`.
 - **Timing Attack Resistance:** User login comparisons maintain constant-time checking even when users are not found.
 - **Data Scoping:** Every database query filters by `userId`, ensuring users can never inspect, alter, or delete tasks belonging to others.
 - **Serverless Connection Pooling:** The Mongoose client caches the connection promise across invocations to avoid exhausting database socket limits during traffic spikes.
