@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { MemoryTask } = require('../memoryStore');
 
 const taskSchema = new mongoose.Schema(
     {
@@ -9,7 +10,50 @@ const taskSchema = new mongoose.Schema(
         dueDate:     { type: Date, default: null },
         done:        { type: Boolean, default: false },
     },
-    { timestamps: true }   // createdAt + updatedAt
+    { timestamps: true }
 );
 
-module.exports = mongoose.model('Task', taskSchema);
+const MongooseTask = mongoose.model('Task', taskSchema);
+
+module.exports = {
+    find(query) {
+        if (global.__is_mongo_connected) {
+            try {
+                return MongooseTask.find(query);
+            } catch (err) {
+                console.warn('Mongoose Task.find failed, using memory fallback:', err.message);
+            }
+        }
+        return MemoryTask.find(query);
+    },
+    async create(data) {
+        if (global.__is_mongo_connected) {
+            try {
+                return await MongooseTask.create(data);
+            } catch (err) {
+                console.warn('Mongoose Task.create failed, using memory fallback:', err.message);
+            }
+        }
+        return MemoryTask.create(data);
+    },
+    async findOneAndUpdate(query, updates, options) {
+        if (global.__is_mongo_connected) {
+            try {
+                return await MongooseTask.findOneAndUpdate(query, updates, options);
+            } catch (err) {
+                console.warn('Mongoose Task.findOneAndUpdate failed, using memory fallback:', err.message);
+            }
+        }
+        return MemoryTask.findOneAndUpdate(query, updates, options);
+    },
+    async findOneAndDelete(query) {
+        if (global.__is_mongo_connected) {
+            try {
+                return await MongooseTask.findOneAndDelete(query);
+            } catch (err) {
+                console.warn('Mongoose Task.findOneAndDelete failed, using memory fallback:', err.message);
+            }
+        }
+        return MemoryTask.findOneAndDelete(query);
+    }
+};
