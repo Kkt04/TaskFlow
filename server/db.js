@@ -1,15 +1,18 @@
 const mongoose = require('mongoose');
 
-const MONGO_URI = process.env.MONGO_URI;
-
 let cached = global.mongoose;
 if (!cached) cached = global.mongoose = { conn: null, promise: null };
 
 async function connectDB() {
+    const mongoUri = process.env.MONGO_URI;
+    if (!mongoUri) {
+        throw new Error('MONGO_URI is not set in environment variables');
+    }
+
     if (cached.conn) return cached.conn;
 
     if (!cached.promise) {
-        cached.promise = mongoose.connect(MONGO_URI, {
+        cached.promise = mongoose.connect(mongoUri, {
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
             maxPoolSize: 10,

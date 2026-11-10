@@ -9,20 +9,33 @@ const taskRoutes = require('./routes/tasks');
 
 const app = express();
 
-connectDB();
-
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Ensure database connection before handling API routes
+app.use('/api', async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        console.error('[DATABASE] Connection error on request:', err.message);
+        return res.status(500).json({
+            error: 'Database connection failed. Please ensure MONGO_URI is configured properly in environment variables.'
+        });
+    }
+});
+
 app.use('/api/auth',  authRoutes);
 app.use('/api/tasks', taskRoutes);
 
+// Fallback for SPA routing
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-if (process.env.NODE_ENV !== 'production') {
+// Start server locally when not running on Vercel serverless platform
+if (!process.env.VERCEL) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () =>
         console.log(`⚡ TaskFlow running → http://localhost:${PORT}`)
